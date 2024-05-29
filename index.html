@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #5cb85c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .feedback {
+            margin-top: 20px;
+        }
+        .feedback p {
+            margin: 5px 0;
+        }
+        .show-password {
+            display: flex;
+            align-items: center;
+        }
+        .show-password input {
+            width: auto;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Password Strength Checker</h1>
+        <form id="passwordForm">
+            <input type="password" id="password" name="password" placeholder="Enter your password">
+            <div class="show-password">
+                <input type="checkbox" id="showPassword">
+                <label for="showPassword">Show Password</label>
+            </div>
+            <button type="submit">Check Password</button>
+        </form>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        document.getElementById('showPassword').addEventListener('change', function() {
+            const passwordInput = document.getElementById('password');
+            if (this.checked) {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+
+            fetch('/check_password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `password=${encodeURIComponent(password)}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                const feedbackDiv = document.getElementById('feedback');
+                feedbackDiv.innerHTML = `<p><strong>Strength:</strong> ${data.strength}</p>`;
+                if (data.feedback.length > 0) {
+                    feedbackDiv.innerHTML += '<p>Feedback:</p><ul>';
+                    data.feedback.forEach(item => {
+                        feedbackDiv.innerHTML += `<li>${item}</li>`;
+                    });
+                    feedbackDiv.innerHTML += '</ul>';
+                } else {
+                    feedbackDiv.innerHTML += '<p>Your password is very strong!</p>';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
